@@ -162,10 +162,8 @@ describe('TwilioCompliance', () => {
       await new Promise(resolve => setTimeout(resolve, 0));
       sdk.open();
       sdk.cancel();
-      // _isOpen is still true after cancel (SDK does not reset it — cancel is a flow event)
-      // A second open() after open+cancel is still guarded by _isOpen
       sdk.open();
-      expect(mockOpen).toHaveBeenCalledOnce();
+      expect(mockOpen).toHaveBeenCalledTimes(2);
     });
   });
 

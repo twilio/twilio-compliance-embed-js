@@ -16,7 +16,8 @@ import { TwilioCompliance } from '@twilio/twilio-compliance-embed-js';
 // Optional: pre-warm the verification provider at app startup
 // TwilioCompliance.preload();
 
-const sdk = TwilioCompliance.create({
+let sdk: ReturnType<typeof TwilioCompliance.create>;
+sdk = TwilioCompliance.create({
   sessionId: 'your-session-id',
   sessionToken: 'your-session-token',
   container: '#compliance-mount', // optional in modal mode; required in inline mode
@@ -49,12 +50,13 @@ const sdk = TwilioCompliance.create({
 // create() initialises the SDK in the background; onReady fires when ready
 
 // ── Inline mode ────────────────────────────────────────────────────────────
-// const sdk = TwilioCompliance.create({
+// let inlineSdk: ReturnType<typeof TwilioCompliance.create>;
+// inlineSdk = TwilioCompliance.create({
 //   sessionId: 'your-session-id',
 //   sessionToken: 'your-session-token',
 //   inline: true,
 //   container: '#compliance-mount', // required — an <iframe> is appended as a child
-//   onReady: () => sdk.open(),
+//   onReady: () => inlineSdk.open(),
 //   onComplete: () => console.log('verification completed'),
 // });
 

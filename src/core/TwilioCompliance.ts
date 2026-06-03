@@ -102,6 +102,7 @@ export class TwilioCompliance {
    */
   cancel(force?: boolean): void {
     if (this._destroyed || !this.adapter) return;
+    this._isOpen = false;
     this.adapter.cancel(force);
   }
 
