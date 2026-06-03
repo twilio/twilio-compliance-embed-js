@@ -115,6 +115,7 @@ export class PersonaAdapter implements IComplianceProvider {
         templateId: null,
         templateVersionId: null,
         host: null,
+        eventsAllowlist: null,
       });
 
       Persona.setupIframe(iframe, containerId, 'inline', {

@@ -1,6 +1,6 @@
 # @twilio/twilio-compliance-embed-js
 
-Identity Verification (IDV) SDK for Twilio Compliance.
+The official JavaScript SDK for Twilio Compliance Embed.
 
 ## Installation
 

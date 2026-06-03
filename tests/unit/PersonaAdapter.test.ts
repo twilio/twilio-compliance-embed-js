@@ -10,7 +10,6 @@ let mockPersonaClient: { open: ReturnType<typeof vi.fn>; cancel: ReturnType<type
 
 // Captured args for inline-mode setup calls
 let capturedSetupEventsId: string = '';
-let capturedSetupEventsConfig: Record<string, unknown> = {};
 let capturedSetupIframeEl: HTMLIFrameElement | null = null;
 let capturedSetupIframeId: string = '';
 let capturedSetupIframeMode: string = '';
@@ -26,7 +25,6 @@ vi.mock('persona', () => ({
     }),
     setupEvents: vi.fn().mockImplementation((id: string, config: Record<string, unknown>) => {
       capturedSetupEventsId = id;
-      capturedSetupEventsConfig = config;
       capturedCallbacks = config as typeof capturedCallbacks;
     }),
     setupIframe: vi.fn().mockImplementation(
@@ -303,7 +301,6 @@ describe('PersonaAdapter — inline mode', () => {
   beforeEach(() => {
     capturedCallbacks = {};
     capturedSetupEventsId = '';
-    capturedSetupEventsConfig = {};
     capturedSetupIframeEl = null;
     capturedSetupIframeId = '';
     capturedSetupIframeMode = '';

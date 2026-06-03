@@ -38,13 +38,11 @@ describe('CJS consumer smoke test (dist/index.cjs)', () => {
   const require = createRequire(import.meta.url);
 
   it('exports TwilioCompliance as a constructor function', () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const cjs = require('../../dist/index.cjs');
     expect(typeof cjs.TwilioCompliance).toBe('function');
   });
 
   it('exports TWILIO_ERROR_CODES with all expected numeric values', () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const cjs = require('../../dist/index.cjs');
     expect(cjs.TWILIO_ERROR_CODES.UNAUTHENTICATED).toBe(21706);
     expect(cjs.TWILIO_ERROR_CODES.INVALID_CONFIG).toBe(21711);
@@ -54,7 +52,6 @@ describe('CJS consumer smoke test (dist/index.cjs)', () => {
   });
 
   it('TwilioCompliance.create() is callable from CJS require', () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { TwilioCompliance } = require('../../dist/index.cjs');
     expect(() =>
       TwilioCompliance.create({ sessionId: 's', sessionToken: 't' }),

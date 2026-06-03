@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TWILIO_ERROR_CODES } from '../../src/core/types';
 import type { TwilioComplianceConfig } from '../../src/core/types';
 
@@ -115,7 +115,6 @@ describe('TwilioCompliance', () => {
 
     it('is a no-op in SSR environments (no window)', () => {
       const win = (globalThis as Record<string, unknown>).window;
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (globalThis as Record<string, unknown>).window;
 
       try {
@@ -219,7 +218,6 @@ describe('TwilioCompliance', () => {
 
     it('is a no-op in SSR environments (no window)', async () => {
       const win = (globalThis as Record<string, unknown>).window;
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (globalThis as Record<string, unknown>).window;
 
       try {
