@@ -166,6 +166,12 @@ The `onError` callback receives an object with the following fields:
 | `21712` | Template misconfiguration — contact Twilio support |
 | `21719` | Unexpected error |
 
+## Styling
+
+For more granular or dynamic styling, the iframe can be targeted via CSS. We recommend targeting a selector provided by your app such as `.your-classname > iframe` instead of relying on internal class names to avoid unexpected breakage.
+
+We recommend using a minimum height of 650px and a minimum width of 400px to ensure contents are properly displayed without excessive horizontal wrapping or scrolling.
+
 ## SSR
 
 Safe to import and call `create()` in server-side environments. SDK initialisation is skipped server-side; `open()` and `cancel()` are silent no-ops outside a browser context. `preload()` returns a resolved promise immediately in Node.js.
