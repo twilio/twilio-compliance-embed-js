@@ -49,23 +49,30 @@ sdk = TwilioCompliance.create({
 });
 // create() initialises the SDK in the background; onReady fires when ready
 
-// ── Inline mode ────────────────────────────────────────────────────────────
-// let inlineSdk: ReturnType<typeof TwilioCompliance.create>;
-// inlineSdk = TwilioCompliance.create({
-//   sessionId: 'your-session-id',
-//   sessionToken: 'your-session-token',
-//   inline: true,
-//   container: '#compliance-mount', // required — an <iframe> is appended as a child
-//   onReady: () => inlineSdk.open(),
-//   onComplete: () => console.log('verification completed'),
-// });
-
 // Close the active flow with an optional confirmation dialog (force=false) or immediately (force=true)
-// sdk.cancel();        // shows confirmation dialog
-// sdk.cancel(true);    // closes immediately without dialog
+sdk.cancel();        // shows confirmation dialog
+sdk.cancel(true);    // closes immediately without dialog
 
 // Clean up when done (route change, component unmount, etc.)
-// sdk.destroy();
+sdk.destroy();
+```
+
+### Inline mode
+
+```ts
+import { TwilioCompliance } from '@twilio/twilio-compliance-embed-js';
+
+let sdk: ReturnType<typeof TwilioCompliance.create>;
+sdk = TwilioCompliance.create({
+  sessionId: 'your-session-id',
+  sessionToken: 'your-session-token',
+  inline: true,
+  container: '#compliance-mount', // required — an <iframe> is appended as a child
+  onReady: () => sdk.open(),
+  onComplete: () => console.log('verification completed'),
+  onCancel: () => console.log('cancelled'),
+  onError: (error) => console.error(`Error ${error.code}: ${error.message}`),
+});
 ```
 
 ## API
