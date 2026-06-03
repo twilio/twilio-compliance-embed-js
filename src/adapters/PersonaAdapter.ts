@@ -52,7 +52,7 @@ export class PersonaAdapter implements IComplianceProvider {
         ...(config.frameHeight !== undefined && { frameHeight: config.frameHeight }),
         ...(config.frameWidth !== undefined && { frameWidth: config.frameWidth }),
         ...(config.iframeTitle !== undefined && { iframeTitle: config.iframeTitle }),
-        ...(config.widgetPadding !== undefined && { padding: config.widgetPadding }),
+        ...(config.widgetPadding !== undefined && { widgetPadding: config.widgetPadding }),
 
         onReady: () => { config.onReady?.(); },
         onComplete: () => { config.onComplete?.(); },
@@ -127,7 +127,7 @@ export class PersonaAdapter implements IComplianceProvider {
         ...(config.frameHeight !== undefined && { frameHeight: config.frameHeight }),
         ...(config.frameWidth !== undefined && { frameWidth: config.frameWidth }),
         ...(config.iframeTitle !== undefined && { iframeTitle: config.iframeTitle }),
-        ...(config.widgetPadding !== undefined && { padding: config.widgetPadding }),
+        ...(config.widgetPadding !== undefined && { widgetPadding: config.widgetPadding }),
       });
 
       this.personaClient = {

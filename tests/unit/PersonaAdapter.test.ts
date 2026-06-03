@@ -226,9 +226,8 @@ describe('PersonaAdapter', () => {
       expect(capturedConfig.iframeTitle).toBe('Verify identity');
     });
 
-    it('maps widgetPadding → padding for Persona', () => {
-      expect(capturedConfig.padding).toEqual({ top: 10, bottom: 20 });
-      expect(capturedConfig).not.toHaveProperty('widgetPadding');
+    it('passes widgetPadding to Persona', () => {
+      expect(capturedConfig.widgetPadding).toEqual({ top: 10, bottom: 20 });
     });
 
     it('does not include undefined optional keys', async () => {
