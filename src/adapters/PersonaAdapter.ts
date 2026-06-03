@@ -3,15 +3,6 @@ import type { TwilioComplianceConfig } from '../core/types';
 import { TWILIO_ERROR_CODES } from '../core/types';
 import { mapError } from '../utils/errorMapper';
 
-/**
- * Adapter that wraps the Persona embedded IDV SDK.
- * All Persona-specific terminology and payload shapes are confined to this file.
- * Implements IComplianceProvider so TwilioCompliance core never imports Persona directly.
- *
- * Persona is loaded via dynamic import inside the constructor so the SDK initialises
- * immediately on create(). open() then calls personaClient.open() to display the UI,
- * and is intended to be called from within the onReady callback.
- */
 const ALLOWED_EVENTS = new Set([
   'start',
   'page-change',
@@ -25,6 +16,8 @@ export class PersonaAdapter implements IComplianceProvider {
   private readonly config: TwilioComplianceConfig;
   private personaClient: { open(): void; cancel(force: boolean): void; destroy(): void } | null = null;
   private containerId: string | null = null;
+  private destroyed = false;
+  private iframe: HTMLIFrameElement | null = null;
 
   static preload(): Promise<void> {
     return import('persona').then((mod) => {
@@ -48,6 +41,7 @@ export class PersonaAdapter implements IComplianceProvider {
     const parent = this.resolveContainer(config.container);
 
     import('persona').then((mod) => {
+      if (this.destroyed) return;
       const Persona = ((mod as unknown as { default?: typeof mod }).default ?? mod);
       this.personaClient = new Persona.Client({
         inquiryId: config.sessionId,
@@ -65,6 +59,7 @@ export class PersonaAdapter implements IComplianceProvider {
         onCancel: () => { config.onCancel?.(); },
 
         onError: ({ code }: { status?: number; code: string }) => {
+          if (this.destroyed) return;
           const { code: twilioCode, message } = mapError(code);
           config.onError?.({ code: twilioCode, message, sessionId: config.sessionId });
         },
@@ -75,6 +70,7 @@ export class PersonaAdapter implements IComplianceProvider {
         },
       });
     }).catch(() => {
+      if (this.destroyed) return;
       config.onError?.({
         code: TWILIO_ERROR_CODES.INTERNAL_PERSONA_ERROR,
         message: 'Failed to load verification provider',
@@ -87,6 +83,7 @@ export class PersonaAdapter implements IComplianceProvider {
     const config = this.config;
     const parent = this.resolveContainer(config.container);
     const iframe = document.createElement('iframe');
+    this.iframe = iframe;
     parent.appendChild(iframe);
 
     const containerId =
@@ -98,6 +95,10 @@ export class PersonaAdapter implements IComplianceProvider {
     this.containerId = containerId;
 
     import('persona').then((mod) => {
+      if (this.destroyed) {
+        iframe.remove();
+        return;
+      }
       const Persona = ((mod as unknown as { default?: typeof mod }).default ?? mod);
       Persona.setupEvents(containerId, {
         onLoad: () => {},
@@ -105,6 +106,7 @@ export class PersonaAdapter implements IComplianceProvider {
         onComplete: () => { config.onComplete?.(); },
         onCancel: () => { config.onCancel?.(); },
         onError: ({ code }: { status?: number; code: string }) => {
+          if (this.destroyed) return;
           const { code: twilioCode, message } = mapError(code);
           config.onError?.({ code: twilioCode, message, sessionId: config.sessionId });
         },
@@ -125,17 +127,18 @@ export class PersonaAdapter implements IComplianceProvider {
         ...(config.frameHeight !== undefined && { frameHeight: config.frameHeight }),
         ...(config.frameWidth !== undefined && { frameWidth: config.frameWidth }),
         ...(config.iframeTitle !== undefined && { iframeTitle: config.iframeTitle }),
-        ...(config.widgetPadding !== undefined && { widgetPadding: config.widgetPadding }),
+        ...(config.widgetPadding !== undefined && { padding: config.widgetPadding }),
       });
 
-      // Inline mode has no open/cancel/destroy client object — expose a no-op stub
       this.personaClient = {
         open: () => {},
         cancel: () => {},
         destroy: () => { iframe.remove(); },
       };
     }).catch(() => {
+      if (this.destroyed) return;
       iframe.remove();
+      this.iframe = null;
       config.onError?.({
         code: TWILIO_ERROR_CODES.INTERNAL_PERSONA_ERROR,
         message: 'Failed to load verification provider',
@@ -153,14 +156,21 @@ export class PersonaAdapter implements IComplianceProvider {
   }
 
   destroy(): void {
+    this.destroyed = true;
     this.personaClient?.destroy();
     this.personaClient = null;
+    this.iframe?.remove();
+    this.iframe = null;
   }
 
   private resolveContainer(selector?: string | HTMLElement): HTMLElement {
     if (!selector) return document.body;
     if (selector instanceof HTMLElement) return selector;
-    const el = document.querySelector<HTMLElement>(selector);
-    return el ?? document.body;
+    try {
+      const el = document.querySelector<HTMLElement>(selector);
+      return el ?? document.body;
+    } catch {
+      return document.body;
+    }
   }
 }

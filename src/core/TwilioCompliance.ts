@@ -7,7 +7,7 @@ import type { IComplianceProvider } from '../adapters/IComplianceProvider';
  * Use the static `create()` factory — do not instantiate directly.
  *
  * Core depends only on IComplianceProvider — no concrete adapter is imported here.
- * PersonaAdapter (and the persona SDK) are loaded via dynamic import inside open(),
+ * PersonaAdapter (and the persona SDK) are loaded via dynamic import inside create(),
  * so this module is safe to evaluate in SSR/Node environments.
  */
 export class TwilioCompliance {
@@ -69,10 +69,11 @@ export class TwilioCompliance {
       if (this._destroyed) return;
       this.adapter = new PersonaAdapter(this.config!);
     }).catch(() => {
-      this.config!.onError?.({
+      if (this._destroyed || !this.config) return;
+      this.config.onError?.({
         code: TWILIO_ERROR_CODES.INTERNAL_PERSONA_ERROR,
         message: 'Failed to load verification provider',
-        sessionId: this.config!.sessionId,
+        sessionId: this.config.sessionId,
       });
     });
   }
