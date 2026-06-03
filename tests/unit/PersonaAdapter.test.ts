@@ -165,7 +165,18 @@ describe('PersonaAdapter', () => {
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    it('forwards allowed event "start" with name and no data', () => {
+    it('passes eventsAllowlist to Persona Client', () => {
+      expect(capturedConfig.eventsAllowlist).toEqual([
+        'start',
+        'page-change',
+        'document-upload',
+        'one-time-link-sent',
+        'one-time-link-start',
+        'one-time-link-exit',
+      ]);
+    });
+
+    it('forwards event with name and no data', () => {
       capturedCallbacks.onEvent?.('start', undefined);
       expect(onEvent).toHaveBeenCalledOnce();
       expect(onEvent).toHaveBeenCalledWith({ name: 'start', data: undefined });
@@ -178,15 +189,9 @@ describe('PersonaAdapter', () => {
       'one-time-link-sent',
       'one-time-link-start',
       'one-time-link-exit',
-    ])('forwards allowed event "%s"', (eventName) => {
+    ])('forwards event "%s" with metadata', (eventName) => {
       capturedCallbacks.onEvent?.(eventName, { foo: 'bar' });
       expect(onEvent).toHaveBeenCalledWith({ name: eventName, data: { foo: 'bar' } });
-    });
-
-    it('silently drops events not in the allowlist', () => {
-      capturedCallbacks.onEvent?.('inquiry-expired', {});
-      capturedCallbacks.onEvent?.('some-unknown-event', {});
-      expect(onEvent).not.toHaveBeenCalled();
     });
 
     it('is a safe no-op when onEvent is not configured', async () => {
@@ -392,18 +397,23 @@ describe('PersonaAdapter — inline mode', () => {
     );
   });
 
-  it('forwards allowed onEvent in inline mode', async () => {
+  it('passes eventsAllowlist to setupEvents in inline mode', async () => {
+    await makeInlineAdapter();
+    expect((capturedCallbacks as Record<string, unknown>).eventsAllowlist).toEqual([
+      'start',
+      'page-change',
+      'document-upload',
+      'one-time-link-sent',
+      'one-time-link-start',
+      'one-time-link-exit',
+    ]);
+  });
+
+  it('forwards onEvent in inline mode', async () => {
     const onEvent = vi.fn();
     await makeInlineAdapter({ onEvent });
     capturedCallbacks.onEvent?.('start', { foo: 1 });
     expect(onEvent).toHaveBeenCalledWith({ name: 'start', data: { foo: 1 } });
-  });
-
-  it('drops disallowed onEvent in inline mode', async () => {
-    const onEvent = vi.fn();
-    await makeInlineAdapter({ onEvent });
-    capturedCallbacks.onEvent?.('inquiry-expired', {});
-    expect(onEvent).not.toHaveBeenCalled();
   });
 
   it('resolves container by CSS selector string', async () => {

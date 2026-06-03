@@ -3,14 +3,14 @@ import type { TwilioComplianceConfig } from '../core/types';
 import { TWILIO_ERROR_CODES } from '../core/types';
 import { mapError } from '../utils/errorMapper';
 
-const ALLOWED_EVENTS = new Set([
+const EVENTS_ALLOWLIST = [
   'start',
   'page-change',
   'document-upload',
   'one-time-link-sent',
   'one-time-link-start',
   'one-time-link-exit',
-]);
+] as const;
 
 export class PersonaAdapter implements IComplianceProvider {
   private readonly config: TwilioComplianceConfig;
@@ -47,6 +47,7 @@ export class PersonaAdapter implements IComplianceProvider {
         inquiryId: config.sessionId,
         sessionToken: config.sessionToken,
         parent,
+        eventsAllowlist: [...EVENTS_ALLOWLIST],
 
         ...(config.language !== undefined && { language: config.language }),
         ...(config.frameHeight !== undefined && { frameHeight: config.frameHeight }),
@@ -65,7 +66,6 @@ export class PersonaAdapter implements IComplianceProvider {
         },
 
         onEvent: (name: string, metadata?: Record<string, unknown>) => {
-          if (!ALLOWED_EVENTS.has(name)) return;
           config.onEvent?.({ name, data: metadata });
         },
       });
@@ -111,13 +111,12 @@ export class PersonaAdapter implements IComplianceProvider {
           config.onError?.({ code: twilioCode, message, sessionId: config.sessionId });
         },
         onEvent: (name: string, metadata?: Record<string, unknown>) => {
-          if (!ALLOWED_EVENTS.has(name)) return;
           config.onEvent?.({ name, data: metadata });
         },
         templateId: null,
         templateVersionId: null,
         host: null,
-        eventsAllowlist: null,
+        eventsAllowlist: [...EVENTS_ALLOWLIST],
       });
 
       Persona.setupIframe(iframe, containerId, 'inline', {

@@ -15,9 +15,8 @@ export interface WidgetPadding {
  */
 export interface TwilioEvent {
   /**
-   * Event name. Stable values: "start", "page-change", "document-upload",
+   * Event name. Allowed: "start", "page-change", "document-upload",
    * "one-time-link-sent", "one-time-link-start", "one-time-link-exit".
-   * Adding or removing stable names is a breaking change (major version bump).
    */
   name: string;
   /** Event-specific metadata. For "page-change", includes pageHeight (number). */
@@ -58,9 +57,8 @@ interface TwilioComplianceBaseConfig {
   onError?: (error: TwilioError) => void;
   /**
    * Fires on a filtered set of flow events useful for analytics and inline resizing.
-   * Stable event names: "start", "page-change", "document-upload",
+   * Allowed: "start", "page-change", "document-upload",
    * "one-time-link-sent", "one-time-link-start", "one-time-link-exit".
-   * IDV-specific and duplicate events are not forwarded.
    */
   onEvent?: (event: TwilioEvent) => void;
 }

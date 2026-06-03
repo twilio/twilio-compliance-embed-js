@@ -44,14 +44,14 @@
     "coverage": "vitest run --coverage"
   },
   "peerDependencies": {
-    "persona": "^5.7.0"
+    "persona": "5.8.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@vitest/coverage-v8": "^2.0.0",
     "eslint": "^10.4.1",
     "jsdom": "^25.0.0",
-    "persona": "^5.7.0",
+    "persona": "5.8.0",
     "tsup": "^8.0.0",
     "typescript": "^5.4.0",
     "typescript-eslint": "^8.60.1",
