@@ -1,0 +1,10 @@
+src/
+tests/
+*.config.ts
+tsconfig.json
+coverage/
+.github/
+.gitignore
+*.log
+.env
+.env.*
