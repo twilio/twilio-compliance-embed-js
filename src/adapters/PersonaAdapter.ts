@@ -1,3 +1,4 @@
+import type { Event } from 'persona';
 import type { IComplianceProvider } from './IComplianceProvider';
 import type { TwilioComplianceConfig } from '../core/types';
 import { TWILIO_ERROR_CODES } from '../core/types';
@@ -47,7 +48,8 @@ export class PersonaAdapter implements IComplianceProvider {
         inquiryId: config.sessionId,
         sessionToken: config.sessionToken,
         parent,
-        eventsAllowlist: [...EVENTS_ALLOWLIST],
+        // Enum string values match these literals exactly (see persona's Event enum)
+        eventsAllowlist: [...EVENTS_ALLOWLIST] as Event[],
 
         ...(config.language !== undefined && { language: config.language }),
         ...(config.frameHeight !== undefined && { frameHeight: config.frameHeight }),
@@ -116,7 +118,8 @@ export class PersonaAdapter implements IComplianceProvider {
         templateId: null,
         templateVersionId: null,
         host: null,
-        eventsAllowlist: [...EVENTS_ALLOWLIST],
+        // Enum string values match these literals exactly (see persona's Event enum)
+        eventsAllowlist: [...EVENTS_ALLOWLIST] as Event[],
       });
 
       Persona.setupIframe(iframe, containerId, 'inline', {

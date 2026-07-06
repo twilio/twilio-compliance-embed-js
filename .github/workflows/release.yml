@@ -4,18 +4,27 @@ on:
   release:
     types: [published]
 
+env:
+  ARTIFACTORY_URL: ${{ vars.ARTIFACTORY_URL }}
+
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-x64
+    if: github.repository_owner == 'twilio'
     permissions:
       contents: read
+      id-token: write
     timeout-minutes: 20
     strategy:
       matrix:
         node: [22, 24]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Artifactory OIDC Auth
+        uses: ./.github/actions/artifactory-oidc
+
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ matrix.node }}
@@ -29,13 +38,18 @@ jobs:
   deploy:
     name: Publish to npm
     needs: [test]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-x64
+    if: github.repository_owner == 'twilio'
     environment: npm
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Artifactory OIDC Auth
+        uses: ./.github/actions/artifactory-oidc
+
       # https://docs.npmjs.com/trusted-publishers — never cache in release builds
       # Node 24+ required for npm OIDC trusted publisher support (npm >= 11.5.1)
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -61,4 +75,6 @@ jobs:
       - run: npm run build
 
       - name: Publish to npm
-        run: npm publish --ignore-scripts --provenance --access public
+        # Publishes to PUBLIC npm via OIDC trusted publishing; Artifactory is only
+        # used above for resolving dependencies during npm ci.
+        run: npm publish --registry https://registry.npmjs.org --ignore-scripts --provenance --access public
