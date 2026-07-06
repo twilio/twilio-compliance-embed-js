@@ -8,6 +8,16 @@ The official JavaScript SDK for Twilio Compliance Embed.
 npm install @twilio/twilio-compliance-embed-js
 ```
 
+This package requires `persona@5.8.0` as a peer dependency. npm 7+ installs it automatically, but if you're using yarn or pnpm you'll need to add it explicitly:
+
+```bash
+# yarn
+yarn add persona@5.8.0
+
+# pnpm
+pnpm add persona@5.8.0
+```
+
 ## Usage
 
 ```ts
