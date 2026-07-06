@@ -1,4 +1,4 @@
-name: Release
+name: Publish
 
 on:
   release:
@@ -40,7 +40,7 @@ jobs:
     needs: [test]
     runs-on: ubuntu-x64
     if: github.repository_owner == 'twilio'
-    environment: npm
+    environment: production
     permissions:
       contents: read
       id-token: write
