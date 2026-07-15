@@ -202,6 +202,89 @@ describe('PersonaAdapter', () => {
     });
   });
 
+  describe('onSubmit — terminal screen detection', () => {
+    let onSubmit: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+      onSubmit = vi.fn();
+      capturedCallbacks = {};
+      capturedConfig = {};
+      adapter = new PersonaAdapter({
+        sessionId: 'inq_test123',
+        sessionToken: 'tok_test456',
+        onSubmit,
+      });
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    it('fires onSubmit with outcome when page-change has a terminal screen name', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' });
+      expect(onSubmit).toHaveBeenCalledOnce();
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'success' });
+    });
+
+    it('fires onSubmit with "failed" outcome', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:failed' });
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'failed' });
+    });
+
+    it('fires onSubmit with "review-pending" outcome', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:review-pending' });
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'review-pending' });
+    });
+
+    it('extracts only the first segment as outcome when extra colon-separated segments exist', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success:1' });
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'success' });
+    });
+
+    it('does not fire onSubmit for non-page-change events', () => {
+      capturedCallbacks.onEvent?.('start', { name: 'twilio:compliance:terminal:success' });
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('does not fire onSubmit when screen name does not start with the reserved prefix', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'screen_abc123' });
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('does not fire onSubmit when screen name has the prefix but empty outcome', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:' });
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('does not fire onSubmit when metadata has no name field', () => {
+      capturedCallbacks.onEvent?.('page-change', { pageHeight: 500 });
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('does not fire onSubmit when metadata is undefined', () => {
+      capturedCallbacks.onEvent?.('page-change', undefined);
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('fires onSubmit only once per distinct terminal screen (idempotent)', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' });
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' });
+      expect(onSubmit).toHaveBeenCalledOnce();
+    });
+
+    it('fires onSubmit for each distinct terminal screen', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' });
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:failed' });
+      expect(onSubmit).toHaveBeenCalledTimes(2);
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'success' });
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'failed' });
+    });
+
+    it('is a safe no-op when onSubmit is not configured', async () => {
+      const adapterNoSubmit = new PersonaAdapter({ sessionId: 'inq_test123', sessionToken: 'tok_test456' });
+      await new Promise(resolve => setTimeout(resolve, 0));
+      expect(() => capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' })).not.toThrow();
+      adapterNoSubmit.destroy();
+    });
+  });
+
   describe('layout and localisation config pass-through', () => {
     beforeEach(async () => {
       capturedCallbacks = {};
@@ -414,6 +497,14 @@ describe('PersonaAdapter — inline mode', () => {
     await makeInlineAdapter({ onEvent });
     capturedCallbacks.onEvent?.('start', { foo: 1 });
     expect(onEvent).toHaveBeenCalledWith({ name: 'start', data: { foo: 1 } });
+  });
+
+  it('fires onSubmit on terminal page-change in inline mode', async () => {
+    const onSubmit = vi.fn();
+    await makeInlineAdapter({ onSubmit });
+    capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' });
+    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(onSubmit).toHaveBeenCalledWith({ outcome: 'success' });
   });
 
   it('resolves container by CSS selector string', async () => {

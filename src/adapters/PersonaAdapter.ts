@@ -13,12 +13,15 @@ const EVENTS_ALLOWLIST = [
   'one-time-link-exit',
 ] as const;
 
+const TERMINAL_SCREEN_PREFIX = 'twilio:compliance:terminal:';
+
 export class PersonaAdapter implements IComplianceProvider {
   private readonly config: TwilioComplianceConfig;
   private personaClient: { open(): void; cancel(force: boolean): void; destroy(): void } | null = null;
   private containerId: string | null = null;
   private destroyed = false;
   private iframe: HTMLIFrameElement | null = null;
+  private readonly firedTerminalScreens = new Set<string>();
 
   static preload(): Promise<void> {
     return import('persona').then((mod) => {
@@ -69,6 +72,7 @@ export class PersonaAdapter implements IComplianceProvider {
 
         onEvent: (name: string, metadata?: Record<string, unknown>) => {
           config.onEvent?.({ name, data: metadata });
+          this.detectTerminalScreen(name, metadata);
         },
       });
     }).catch(() => {
@@ -114,6 +118,7 @@ export class PersonaAdapter implements IComplianceProvider {
         },
         onEvent: (name: string, metadata?: Record<string, unknown>) => {
           config.onEvent?.({ name, data: metadata });
+          this.detectTerminalScreen(name, metadata);
         },
         templateId: null,
         templateVersionId: null,
@@ -163,6 +168,18 @@ export class PersonaAdapter implements IComplianceProvider {
     this.personaClient = null;
     this.iframe?.remove();
     this.iframe = null;
+  }
+
+  private detectTerminalScreen(eventName: string, metadata?: Record<string, unknown>): void {
+    if (eventName !== 'page-change') return;
+    const screenName = metadata?.name as string | undefined;
+    if (!screenName || !screenName.startsWith(TERMINAL_SCREEN_PREFIX)) return;
+    const suffix = screenName.slice(TERMINAL_SCREEN_PREFIX.length);
+    const outcome = suffix.split(':')[0];
+    if (!outcome) return;
+    if (this.firedTerminalScreens.has(screenName)) return;
+    this.firedTerminalScreens.add(screenName);
+    this.config.onSubmit?.({ outcome });
   }
 
   private resolveContainer(selector?: string | HTMLElement): HTMLElement {
