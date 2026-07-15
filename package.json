@@ -1,6 +1,6 @@
 {
   "name": "@twilio/twilio-compliance-embed-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "The official JavaScript SDK for Twilio Compliance Embed",
   "license": "MIT",
   "repository": {
@@ -28,8 +28,7 @@
     }
   },
   "files": [
-    "dist/index.*",
-    "dist/iife/"
+    "dist/index.*"
   ],
   "sideEffects": false,
   "engines": {

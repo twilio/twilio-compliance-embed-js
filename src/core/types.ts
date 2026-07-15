@@ -23,6 +23,14 @@ export interface TwilioEvent {
   data?: Record<string, unknown>;
 }
 
+/**
+ * Payload delivered to the onSubmit callback when the user reaches a terminal screen.
+ */
+export interface SubmitResult {
+  /** Terminal outcome extracted from the screen name (e.g. "success", "failed", "review-pending"). */
+  outcome: string;
+}
+
 interface TwilioComplianceBaseConfig {
   /** Unique identifier for the pre-created verification session. */
   sessionId: string;
@@ -53,6 +61,12 @@ interface TwilioComplianceBaseConfig {
   onComplete?: () => void;
   /** Fires when the user exits the flow without completing. */
   onCancel?: () => void;
+  /**
+   * Fires when the user reaches a terminal screen of the compliance flow.
+   * Independent of onComplete — onSubmit signals arrival at a terminal state,
+   * while onComplete signals the user clicking a completion button.
+   */
+  onSubmit?: (result: SubmitResult) => void;
   /** Fires when an SDK-level failure occurs. */
   onError?: (error: TwilioError) => void;
   /**
