@@ -43,6 +43,10 @@ sdk = TwilioCompliance.create({
   onReady: () => sdk.open(),
 
   onComplete: () => console.log('verification completed'),
+  onSubmit: (result) => {
+    // result.outcome - e.g. 'success', 'failed', 'review-pending'
+    console.log('terminal screen reached:', result.outcome);
+  },
   onCancel: () => console.log('cancelled'),
   onError: (error) => {
     // error.code    - Twilio error code (e.g. 21706)
@@ -106,6 +110,7 @@ The config is mode-dependent — `inline` determines whether `container` is requ
 | `widgetPadding` | `WidgetPadding` | No | Padding around the widget (`{ top?, bottom?, left?, right? }` in px) |
 | `onReady` | `() => void` | No | Fires when the verification UI is ready — call `sdk.open()` here |
 | `onComplete` | `() => void` | No | Fires on successful verification |
+| `onSubmit` | `(result: SubmitResult) => void` | No | Fires when the user reaches a terminal screen — see `SubmitResult` below |
 | `onCancel` | `() => void` | No | Fires when the user exits without completing |
 | `onError` | `(error: TwilioError) => void` | No | Fires on SDK-level failure — see error codes below |
 | `onEvent` | `(event: TwilioEvent) => void` | No | Fires on notable verification flow events |
@@ -125,6 +130,7 @@ The config is mode-dependent — `inline` determines whether `container` is requ
 | `widgetPadding` | `WidgetPadding` | No | Padding around the widget (`{ top?, bottom?, left?, right? }` in px) |
 | `onReady` | `() => void` | No | Fires when the verification UI is ready — call `sdk.open()` here |
 | `onComplete` | `() => void` | No | Fires on successful verification |
+| `onSubmit` | `(result: SubmitResult) => void` | No | Fires when the user reaches a terminal screen — see `SubmitResult` below |
 | `onCancel` | `() => void` | No | Fires when the user exits without completing |
 | `onError` | `(error: TwilioError) => void` | No | Fires on SDK-level failure — see error codes below |
 | `onEvent` | `(event: TwilioEvent) => void` | No | Fires on notable verification flow events |
@@ -155,6 +161,16 @@ The `onEvent` callback receives an object with the following fields:
 | `data` | `Record<string, unknown> \| undefined` | Optional event metadata |
 
 Allowed event names: `start`, `page-change`, `document-upload`, `one-time-link-sent`, `one-time-link-start`, `one-time-link-exit`.
+
+### `SubmitResult`
+
+The `onSubmit` callback receives an object with the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `outcome` | `string` | Terminal outcome (e.g. `"success"`, `"failed"`, `"review-pending"`) |
+
+`onSubmit` fires when the user reaches a terminal screen in the compliance flow. It is independent of `onComplete` — `onSubmit` signals arrival at a terminal state, while `onComplete` signals the user clicking a completion button. Each terminal screen fires `onSubmit` at most once per SDK instance.
 
 ### `TwilioError`
 
