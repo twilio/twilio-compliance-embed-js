@@ -27,7 +27,11 @@ export interface TwilioEvent {
  * Payload delivered to the onSubmit callback when the user reaches a terminal screen.
  */
 export interface SubmitResult {
-  /** Terminal outcome extracted from the screen name (e.g. "success", "failed", "review-pending"). */
+  /**
+   * Terminal outcome extracted from the screen name (e.g. "success", "failed", "review-pending").
+   * Also fires as "submitted" for legacy Persona templates using a `twilio_inquiry_completed`
+   * page name, which encodes no outcome of its own.
+   */
   outcome: string;
 }
 
