@@ -172,8 +172,6 @@ The `onSubmit` callback receives an object with the following fields:
 
 `onSubmit` fires when the user reaches a terminal screen in the compliance flow. It is independent of `onComplete` — `onSubmit` signals arrival at a terminal state, while `onComplete` signals the user clicking a completion button. Each terminal screen fires `onSubmit` at most once per SDK instance.
 
-`onSubmit` also fires with `outcome: 'submitted'` for legacy Persona templates that use a `twilio_inquiry_completed` page name, since that older convention doesn't encode an outcome of its own.
-
 ### `TwilioError`
 
 The `onError` callback receives an object with the following fields:
