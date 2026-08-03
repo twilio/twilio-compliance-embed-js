@@ -14,6 +14,10 @@ const EVENTS_ALLOWLIST = [
 ] as const;
 
 const TERMINAL_SCREEN_PREFIX = 'twilio:compliance:terminal:';
+// Legacy convention used by older Persona templates: a bare completion marker with no
+// encoded outcome (never appears with any suffix in practice, but we use startsWith
+// for consistency with how legacy consumers matched it).
+const INQUIRY_SUBMITTED_PREFIX = 'twilio_inquiry_completed';
 
 export class PersonaAdapter implements IComplianceProvider {
   private readonly config: TwilioComplianceConfig;
@@ -173,13 +177,23 @@ export class PersonaAdapter implements IComplianceProvider {
   private detectTerminalScreen(eventName: string, metadata?: Record<string, unknown>): void {
     if (eventName !== 'page-change') return;
     const screenName = metadata?.name as string | undefined;
-    if (!screenName || !screenName.startsWith(TERMINAL_SCREEN_PREFIX)) return;
-    const suffix = screenName.slice(TERMINAL_SCREEN_PREFIX.length);
-    const outcome = suffix.split(':')[0];
-    if (!outcome) return;
-    if (this.firedTerminalScreens.has(screenName)) return;
-    this.firedTerminalScreens.add(screenName);
-    this.config.onSubmit?.({ outcome });
+    if (!screenName) return;
+
+    if (screenName.startsWith(TERMINAL_SCREEN_PREFIX)) {
+      const suffix = screenName.slice(TERMINAL_SCREEN_PREFIX.length);
+      const outcome = suffix.split(':')[0];
+      if (!outcome) return;
+      if (this.firedTerminalScreens.has(screenName)) return;
+      this.firedTerminalScreens.add(screenName);
+      this.config.onSubmit?.({ outcome });
+      return;
+    }
+
+    if (screenName.startsWith(INQUIRY_SUBMITTED_PREFIX)) {
+      if (this.firedTerminalScreens.has(screenName)) return;
+      this.firedTerminalScreens.add(screenName);
+      this.config.onSubmit?.({ outcome: 'submitted' });
+    }
   }
 
   private resolveContainer(selector?: string | HTMLElement): HTMLElement {

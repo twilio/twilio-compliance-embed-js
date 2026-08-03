@@ -283,6 +283,30 @@ describe('PersonaAdapter', () => {
       expect(() => capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' })).not.toThrow();
       adapterNoSubmit.destroy();
     });
+
+    it('fires onSubmit with outcome "submitted" for the legacy twilio_inquiry_completed page name', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio_inquiry_completed' });
+      expect(onSubmit).toHaveBeenCalledOnce();
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'submitted' });
+    });
+
+    it('fires onSubmit with outcome "submitted" when the legacy page name has extra suffix content', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio_inquiry_completed_extra' });
+      expect(onSubmit).toHaveBeenCalledOnce();
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'submitted' });
+    });
+
+    it('does not fire the legacy branch for a reserved-prefix terminal screen name', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' });
+      expect(onSubmit).toHaveBeenCalledOnce();
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'success' });
+    });
+
+    it('fires onSubmit only once per distinct legacy screen name (idempotent)', () => {
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio_inquiry_completed' });
+      capturedCallbacks.onEvent?.('page-change', { name: 'twilio_inquiry_completed' });
+      expect(onSubmit).toHaveBeenCalledOnce();
+    });
   });
 
   describe('layout and localisation config pass-through', () => {
@@ -505,6 +529,14 @@ describe('PersonaAdapter — inline mode', () => {
     capturedCallbacks.onEvent?.('page-change', { name: 'twilio:compliance:terminal:success' });
     expect(onSubmit).toHaveBeenCalledOnce();
     expect(onSubmit).toHaveBeenCalledWith({ outcome: 'success' });
+  });
+
+  it('fires onSubmit with outcome "submitted" on legacy page-change in inline mode', async () => {
+    const onSubmit = vi.fn();
+    await makeInlineAdapter({ onSubmit });
+    capturedCallbacks.onEvent?.('page-change', { name: 'twilio_inquiry_completed' });
+    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(onSubmit).toHaveBeenCalledWith({ outcome: 'submitted' });
   });
 
   it('resolves container by CSS selector string', async () => {
