@@ -9,11 +9,9 @@ const mockDestroy = vi.fn();
 const mockPreload = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('../../src/adapters/PersonaAdapter', () => {
-  const Ctor = vi.fn().mockImplementation(() => ({
-    open: mockOpen,
-    cancel: mockCancel,
-    destroy: mockDestroy,
-  }));
+  const Ctor = vi.fn().mockImplementation(function () {
+    return { open: mockOpen, cancel: mockCancel, destroy: mockDestroy };
+  });
   (Ctor as unknown as Record<string, unknown>).preload = mockPreload;
   return { PersonaAdapter: Ctor };
 });

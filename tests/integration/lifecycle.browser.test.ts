@@ -12,7 +12,7 @@ const mockOpen = vi.fn();
 const mockDestroy = vi.fn();
 
 vi.mock('../../src/adapters/PersonaAdapter', () => ({
-  PersonaAdapter: vi.fn().mockImplementation((config: TwilioComplianceConfig) => {
+  PersonaAdapter: vi.fn().mockImplementation(function (config: TwilioComplianceConfig) {
     capturedConfig = config;
     return { open: mockOpen, destroy: mockDestroy };
   }),
