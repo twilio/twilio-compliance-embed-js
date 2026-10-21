@@ -17,7 +17,7 @@ let capturedSetupIframeOpts: Record<string, unknown> = {};
 
 vi.mock('persona', () => ({
   default: {
-    Client: vi.fn().mockImplementation((config: Record<string, unknown>) => {
+    Client: vi.fn().mockImplementation(function (config: Record<string, unknown>) {
       capturedConfig = config;
       capturedCallbacks = config as typeof capturedCallbacks;
       mockPersonaClient = { open: vi.fn(), cancel: vi.fn(), destroy: vi.fn() };
